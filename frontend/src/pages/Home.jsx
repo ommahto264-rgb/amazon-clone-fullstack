@@ -16,7 +16,7 @@ function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:3000/api/products')
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`)
         const data = await response.json()
 
         if (data.products) {
