@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
+import { useNavigate, Link } from 'react-router-dom'
 
 function Login() {
   const navigate = useNavigate()
@@ -10,6 +9,7 @@ function Login() {
   })
 
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -20,8 +20,9 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
-    
+    setMessage('')
+    setLoading(true)
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
@@ -34,52 +35,70 @@ function Login() {
       const data = await response.json()
 
       if (data.token) {
-
-  localStorage.setItem('token', data.token)
-
-  localStorage.setItem(
-    'role',
-    data.user.role
-  )
-
-  navigate('/home')
-
-}
-       else {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('role', data.user.role)
+        navigate('/home')
+      } else {
         setMessage(data.message)
       }
     } catch (error) {
       setMessage('Something went wrong')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="auth-page">
+      <div className="auth-card">
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <div className="auth-logo">amazon</div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <h2>Sign in</h2>
 
-        <button type="submit">Login</button>
-      </form>
+        <form className="auth-form" onSubmit={handleSubmit}>
 
-      <p>{message}</p>
+          <div>
+            <label className="auth-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="auth-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+
+        </form>
+
+        {message && <p className="auth-message">{message}</p>}
+
+        <hr className="auth-divider" />
+
+        <p className="auth-footer">
+          New here? <Link to="/signup">Create an account</Link>
+        </p>
+
+      </div>
     </div>
   )
 }
