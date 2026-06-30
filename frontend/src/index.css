@@ -313,3 +313,12 @@ a {
   color: #c45500;
   text-decoration: underline;
 }
+
+.logout-button {
+  background-color:#007185;
+  color: white;
+  border:none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}

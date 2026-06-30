@@ -80,7 +80,7 @@ function Navbar({ searchTerm, setSearchTerm }) {
 
   )
 }
-            <button onClick={handleLogout} style={{ cursor: 'pointer' }}>
+            <button className="logout-button" onClick={handleLogout} style={{ cursor: 'pointer' }}>
               Logout
             </button>
           </>
