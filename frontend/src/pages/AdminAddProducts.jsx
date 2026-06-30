@@ -4,32 +4,51 @@ function AdminAddProduct() {
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [image, setImage] = useState('')
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
   const [price, setPrice] = useState('')
   const [category, setCategory] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!imageFile) {
+      alert('Please select an image')
+      return
+    }
+
+    setSubmitting(true)
+
     try {
 
       const token = localStorage.getItem('token')
+
+      const formData = new FormData()
+      formData.append('title', title)
+      formData.append('description', description)
+      formData.append('price', price)
+      formData.append('category', category)
+      formData.append('image', imageFile)
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/createProduct`,
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
+            // Note: no Content-Type header — browser sets it automatically
+            // with the correct multipart boundary when using FormData
           },
-          body: JSON.stringify({
-            title,
-            description,
-            image,
-            price,
-            category
-          })
+          body: formData
         }
       )
 
@@ -39,12 +58,16 @@ function AdminAddProduct() {
 
       setTitle('')
       setDescription('')
-      setImage('')
+      setImageFile(null)
+      setImagePreview(null)
       setPrice('')
       setCategory('')
 
     } catch (error) {
       console.log(error)
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -95,12 +118,25 @@ function AdminAddProduct() {
           />
 
           <input
-            type="text"
-            placeholder="Image URL"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
             style={inputStyle}
           />
+
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{
+                width: '100%',
+                maxHeight: '180px',
+                objectFit: 'cover',
+                borderRadius: '5px',
+                marginBottom: '15px'
+              }}
+            />
+          )}
 
           <input
             type="number"
@@ -120,18 +156,19 @@ function AdminAddProduct() {
 
           <button
             type="submit"
+            disabled={submitting}
             style={{
               width: '100%',
               padding: '12px',
-              background: '#232f3e',
+              background: submitting ? '#888' : '#232f3e',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
-              cursor: 'pointer',
+              cursor: submitting ? 'not-allowed' : 'pointer',
               fontSize: '16px'
             }}
           >
-            Add Product
+            {submitting ? 'Uploading...' : 'Add Product'}
           </button>
 
         </form>
