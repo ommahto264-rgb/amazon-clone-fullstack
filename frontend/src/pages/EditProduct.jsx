@@ -19,7 +19,7 @@ function EditProduct() {
     try {
 
       const response = await fetch(
-        `http://localhost:3000/api/createProduct/${id}`
+       `${import.meta.env.VITE_API_URL}/api/createProduct/${id}`
       )
 
       const data = await response.json()
@@ -51,7 +51,7 @@ function EditProduct() {
       const token = localStorage.getItem('token')
 
       const response = await fetch(
-        `http://localhost:3000/api/createProduct/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/createProduct/${id}`,
         {
           method: 'PUT',
           headers: {

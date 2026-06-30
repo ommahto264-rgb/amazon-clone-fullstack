@@ -9,7 +9,7 @@ function ProductDetails() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:3000/api/products/${id}`)
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
         const data = await res.json()
         setProduct(data.product)
       } catch (err) {
@@ -25,7 +25,7 @@ function ProductDetails() {
     try {
       const token = localStorage.getItem('token')
 
-      const res = await fetch('http://127.0.0.1:3000/api/cart', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -12,7 +12,7 @@ function AdminDashboard() {
     try {
 
       const response = await fetch(
-        'http://localhost:3000/api/products'
+        `${import.meta.env.VITE_API_URL}/api/products`
       )
 
       const data = await response.json()
@@ -36,7 +36,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('token')
 
       const response = await fetch(
-        `http://localhost:3000/api/createProduct/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/createProduct/${id}`,
         {
           method: 'DELETE',
           headers: {

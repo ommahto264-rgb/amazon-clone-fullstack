@@ -9,7 +9,7 @@ function Orders() {
     try {
       const token = localStorage.getItem('token')
 
-      const res = await fetch('http://127.0.0.1:3000/api/orders', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
