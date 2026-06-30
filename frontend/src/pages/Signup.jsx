@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
 function Signup() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -9,6 +11,7 @@ function Signup() {
   })
 
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -19,6 +22,8 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setMessage('')
+    setLoading(true)
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
@@ -31,56 +36,94 @@ function Signup() {
 
       const data = await response.json()
       setMessage(data.message)
+
+      if (response.ok) {
+        setTimeout(() => navigate('/login'), 1200)
+      }
     } catch (error) {
       setMessage('Something went wrong')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div>
-      <h2>Signup</h2>
+    <div className="auth-page">
+      <div className="auth-card">
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <div className="auth-logo">amazon</div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <h2>Create account</h2>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <br /><br />
+        <form className="auth-form" onSubmit={handleSubmit}>
 
-        <input
-          type="text"
-          name="phone"
-          placeholder="Enter phone"
-          value={formData.phone}
-          onChange={handleChange}
-        />
-        <br /><br />
+          <div>
+            <label className="auth-label">Your name</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="First and last name"
+              value={formData.name}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
 
-        <button type="submit">Signup</button>
-      </form>
+          <div>
+            <label className="auth-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
 
-      <p>{message}</p>
+          <div>
+            <label className="auth-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="At least 6 characters"
+              value={formData.password}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="auth-label">Mobile number</label>
+            <input
+              type="text"
+              name="phone"
+              placeholder="Enter your phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              className="auth-input"
+              required
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Creating account...' : 'Create your account'}
+          </button>
+
+        </form>
+
+        {message && <p className="auth-message">{message}</p>}
+
+        <hr className="auth-divider" />
+
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+
+      </div>
     </div>
   )
 }
