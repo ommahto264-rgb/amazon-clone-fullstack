@@ -6,10 +6,12 @@ const createProduct = async (req, res) => {
     const {
       title,
       description,
-      image,
       price,
       category
     } = req.body
+
+    // Cloudinary URL comes from multer-storage-cloudinary after upload
+    const image = req.file ? req.file.path : null
 
     if (!title || !price) {
       return res.status(400).json({
@@ -88,10 +90,15 @@ const updateProduct = async (req, res) => {
     const {
       title,
       description,
-      image,
       price,
       category
     } = req.body
+
+    // If a new file was uploaded, use its Cloudinary URL; otherwise keep existing image
+    let image = req.body.existingImage || null
+    if (req.file) {
+      image = req.file.path
+    }
 
     const updatedProduct = await pool.query(
       `

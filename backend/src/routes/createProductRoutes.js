@@ -5,11 +5,13 @@ const { createProduct, deleteProduct, updateProduct } = require('../controllers/
 
 const authMiddleware = require('../middleware/authMiddleware')
 const adminMiddleware = require('../middleware/adminMiddleware')
+const upload = require('../middleware/uploadMiddleware')
 
 router.post(
   '/',
   authMiddleware,
   adminMiddleware,
+  upload.single('image'),
   createProduct
 )
 
@@ -24,6 +26,7 @@ router.put(
   '/:id',
   authMiddleware,
   adminMiddleware,
+  upload.single('image'),
   updateProduct
 )
 
