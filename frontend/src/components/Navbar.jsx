@@ -33,7 +33,7 @@ function Navbar({ searchTerm, setSearchTerm }) {
           type="text"
           placeholder="Search products..."
           value={searchTerm}
-          onSubmit={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={{
             padding: '8px',
             borderRadius: '5px',

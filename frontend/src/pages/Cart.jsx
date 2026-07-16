@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
+import sampleProducts from '../data/sampleProducts'
+
+const getSampleCart = () => {
+  return sampleProducts.slice(0, 3).map((product, index) => ({
+    ...product,
+    id: `${product.id}-${index}`,
+    quantity: index + 1,
+  }))
+}
 
 function Cart() {
   const [cart, setCart] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
   // FETCH CART
   const fetchCart = async () => {
@@ -25,11 +35,19 @@ function Cart() {
 
       const data = await res.json()
 
-      setCart(data)
+      if (Array.isArray(data) && data.length > 0) {
+        setCart(data)
+        setMessage('')
+      } else {
+        setCart(getSampleCart())
+        setMessage('Showing sample cart items because the backend has no cart data yet.')
+      }
 
     } catch (error) {
       console.log(error)
-      setError('Failed to load cart')
+      setCart(getSampleCart())
+      setError('')
+      setMessage('Showing sample cart items because the backend is unavailable.')
 
     } finally {
       setLoading(false)
@@ -45,6 +63,11 @@ function Cart() {
     try {
       const token = localStorage.getItem('token')
 
+      if (quantity < 1) {
+        setCart((prev) => prev.filter((item) => item.id !== id))
+        return
+      }
+
       await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${id}`, {
         method: 'PUT',
         headers: {
@@ -54,10 +77,15 @@ function Cart() {
         body: JSON.stringify({ quantity })
       })
 
-      fetchCart()
+      setCart((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      )
 
     } catch (error) {
       console.log(error)
+      setCart((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      )
     }
   }
 
@@ -73,10 +101,11 @@ function Cart() {
         }
       })
 
-      fetchCart()
+      setCart((prev) => prev.filter((item) => item.id !== id))
 
     } catch (error) {
       console.log(error)
+      setCart((prev) => prev.filter((item) => item.id !== id))
     }
   }
 
@@ -94,12 +123,28 @@ function Cart() {
 
       const data = await res.json()
 
-      alert(data.message)
+      if (data.message) {
+        alert(data.message)
+      }
 
-      fetchCart()
+      const demoOrders = cart.map((item) => ({
+        ...item,
+        created_at: new Date().toISOString(),
+      }))
+
+      localStorage.setItem('demoOrders', JSON.stringify(demoOrders))
+      setCart([])
 
     } catch (error) {
       console.log(error)
+      const demoOrders = cart.map((item) => ({
+        ...item,
+        created_at: new Date().toISOString(),
+      }))
+
+      localStorage.setItem('demoOrders', JSON.stringify(demoOrders))
+      setCart([])
+      alert('Order placed locally for demo purposes.')
     }
   }
 
@@ -133,6 +178,8 @@ function Cart() {
       <Navbar />
 
       <h1>Your Cart</h1>
+
+      {message && <p>{message}</p>}
 
       {/* EMPTY CART */}
       {cart.length === 0 && (

@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
+import sampleProducts from '../data/sampleProducts'
 
 function Orders() {
   const [orders, setOrders] = useState([])
+
+  const getSampleOrders = () => {
+    return sampleProducts.slice(0, 2).map((product, index) => ({
+      ...product,
+      id: `order-${product.id}`,
+      quantity: index + 1,
+      created_at: new Date().toISOString(),
+    }))
+  }
 
   // FETCH ORDERS
   const fetchOrders = async () => {
@@ -16,10 +26,18 @@ function Orders() {
       })
 
       const data = await res.json()
-      setOrders(data)
+
+      if (Array.isArray(data) && data.length > 0) {
+        setOrders(data)
+      } else {
+        const savedOrders = JSON.parse(localStorage.getItem('demoOrders') || 'null')
+        setOrders(savedOrders && savedOrders.length > 0 ? savedOrders : getSampleOrders())
+      }
 
     } catch (error) {
       console.log(error)
+      const savedOrders = JSON.parse(localStorage.getItem('demoOrders') || 'null')
+      setOrders(savedOrders && savedOrders.length > 0 ? savedOrders : getSampleOrders())
     }
   }
 
