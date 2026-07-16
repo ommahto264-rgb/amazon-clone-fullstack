@@ -1,23 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import sampleProducts from '../data/sampleProducts'
 
 function ProductDetails() {
   const { id } = useParams()
   const [product, setProduct] = useState(null)
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
-        const data = await res.json()
-        setProduct(data.product)
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
-    fetchProduct()
+    const foundProduct = sampleProducts.find((item) => item.id === Number(id))
+    setProduct(foundProduct || null)
   }, [id])
 
   // 🔥 ADD TO CART FUNCTION
