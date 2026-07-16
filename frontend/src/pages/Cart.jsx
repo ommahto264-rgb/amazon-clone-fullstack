@@ -150,6 +150,7 @@ function Cart() {
   }
 
   // TOTAL PRICE
+  const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
   const total = cart.reduce((acc, item) => {
     return acc + Number(item.price) * item.quantity
   }, 0)
@@ -159,7 +160,9 @@ function Cart() {
     return (
       <div>
         <Navbar />
-        <h2>Loading cart...</h2>
+        <div className="state-message">
+          <h2>Loading cart...</h2>
+        </div>
       </div>
     )
   }
@@ -169,8 +172,12 @@ function Cart() {
     return (
       <div>
         <Navbar />
-        <h2>{error}</h2>
-        <button onClick={fetchCart}>Try again</button>
+        <div className="state-message">
+          <h2>{error}</h2>
+          <button className="btn-secondary" onClick={fetchCart}>
+            Try again
+          </button>
+        </div>
       </div>
     )
   }
@@ -179,88 +186,86 @@ function Cart() {
     <div>
       <Navbar />
 
-      <h1>Your Cart</h1>
+      <div className="cart-page">
 
-      {/* EMPTY CART */}
-      {cart.length === 0 && (
-        <h2>Cart is empty</h2>
-      )}
+        {/* ITEM LIST */}
+        <div className="cart-main">
+          <h1>Shopping Cart</h1>
 
-      {/* CART ITEMS */}
-      {cart.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            display: 'flex',
-            gap: '20px',
-            border: '1px solid #ccc',
-            margin: '10px',
-            padding: '10px'
-          }}
-        >
-
-          {/* IMAGE */}
-          <img
-            src={item.image}
-            alt={item.title}
-            width="120"
-            height="120"
-            style={{ objectFit: 'contain' }}
-          />
-
-          {/* PRODUCT INFO */}
-          <div>
-            <h3>{item.title}</h3>
-
-            <p>₹{item.price}</p>
-
-            <p>Quantity: {item.quantity}</p>
-
-            {/* BUTTONS */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-
-              <button
-                onClick={() =>
-                  updateQuantity(item.id, item.quantity + 1)
-                }
-              >
-                +
+          {cart.length === 0 && (
+            <div className="state-message">
+              <h2>Your cart is empty</h2>
+              <button className="btn-secondary" onClick={() => navigate('/home')}>
+                Continue shopping
               </button>
-
-              <button
-                onClick={() =>
-                  updateQuantity(item.id, item.quantity - 1)
-                }
-              >
-                -
-              </button>
-
-              <button onClick={() => deleteItem(item.id)}>
-                Remove
-              </button>
-
             </div>
+          )}
+
+          {cart.map((item) => (
+            <div key={item.id} className="cart-item">
+
+              <img
+                src={item.image}
+                alt={item.title}
+                className="cart-item-image"
+              />
+
+              <div>
+                <h3 className="cart-item-title">{item.title}</h3>
+
+                <p className="cart-item-price">
+                  <span className="price-symbol">₹</span>
+                  {item.price}
+                </p>
+
+                <div className="cart-item-actions">
+                  <div className="qty-stepper">
+                    <button
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    className="cart-item-remove"
+                    onClick={() => deleteItem(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ORDER SUMMARY */}
+        {cart.length > 0 && (
+          <div className="cart-summary">
+            <p className="cart-summary-total">
+              Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''}):{' '}
+              <strong>₹{total}</strong>
+            </p>
+
+            <button
+              className="btn-primary"
+              onClick={placeOrder}
+              disabled={placingOrder}
+            >
+              {placingOrder ? 'Placing order...' : 'Place Order'}
+            </button>
           </div>
-        </div>
-      ))}
+        )}
 
-      {/* TOTAL + PLACE ORDER */}
-      {cart.length > 0 && (
-        <div
-          style={{
-            marginTop: '20px',
-            padding: '20px',
-            border: '1px solid #ccc'
-          }}
-        >
-          <h2>Total: ₹{total}</h2>
-
-          <button onClick={placeOrder} disabled={placingOrder}>
-            {placingOrder ? 'Placing order...' : 'Place Order'}
-          </button>
-        </div>
-      )}
-
+      </div>
     </div>
   )
 }

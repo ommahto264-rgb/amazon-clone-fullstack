@@ -54,7 +54,9 @@ function Orders() {
     return (
       <div>
         <Navbar />
-        <h2>Loading orders...</h2>
+        <div className="state-message">
+          <h2>Loading orders...</h2>
+        </div>
       </div>
     )
   }
@@ -63,8 +65,12 @@ function Orders() {
     return (
       <div>
         <Navbar />
-        <h2>{error}</h2>
-        <button onClick={fetchOrders}>Try again</button>
+        <div className="state-message">
+          <h2>{error}</h2>
+          <button className="btn-secondary" onClick={fetchOrders}>
+            Try again
+          </button>
+        </div>
       </div>
     )
   }
@@ -73,47 +79,58 @@ function Orders() {
     <div>
       <Navbar />
 
-      <h1>Your Orders</h1>
+      <div className="orders-page">
+        <h1>Your Orders</h1>
 
-      {orders.length === 0 && (
-        <p>No orders yet</p>
-      )}
-
-      {orders.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            display: 'flex',
-            gap: '20px',
-            border: '1px solid #ccc',
-            padding: '10px',
-            margin: '10px'
-          }}
-        >
-          {/* IMAGE */}
-          <img
-            src={item.image}
-            alt={item.title}
-            width="100"
-            height="100"
-            style={{ objectFit: 'contain' }}
-          />
-
-          <div>
-            <h3>{item.title}</h3>
-
-            <p>₹{item.price}</p>
-
-            <p>Quantity: {item.quantity}</p>
-
-            <p>
-              Ordered on:
-              {' '}
-              {new Date(item.created_at).toLocaleString()}
-            </p>
+        {orders.length === 0 && (
+          <div className="state-message">
+            <h2>No orders yet</h2>
+            <button className="btn-secondary" onClick={() => navigate('/home')}>
+              Start shopping
+            </button>
           </div>
-        </div>
-      ))}
+        )}
+
+        {orders.map((item) => (
+          <div key={item.id} className="order-card">
+
+            <div className="order-card-header">
+              <div>
+                <span className="order-card-header-label">Order Placed</span>
+                <span className="order-card-header-value">
+                  {new Date(item.created_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div>
+                <span className="order-card-header-label">Total</span>
+                <span className="order-card-header-value">
+                  ₹{Number(item.price) * item.quantity}
+                </span>
+              </div>
+
+              <div>
+                <span className="order-card-header-label">Order #</span>
+                <span className="order-card-header-value">{item.id}</span>
+              </div>
+            </div>
+
+            <div className="order-card-body">
+              <img
+                src={item.image}
+                alt={item.title}
+                className="order-item-image"
+              />
+
+              <div>
+                <p className="order-item-title">{item.title}</p>
+                <p className="order-item-qty">Quantity: {item.quantity}</p>
+              </div>
+            </div>
+
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

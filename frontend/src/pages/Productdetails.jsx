@@ -98,7 +98,9 @@ function ProductDetails() {
     return (
       <div>
         <Navbar />
-        <h2>Loading product...</h2>
+        <div className="state-message">
+          <h2>Loading product...</h2>
+        </div>
       </div>
     )
   }
@@ -107,7 +109,9 @@ function ProductDetails() {
     return (
       <div>
         <Navbar />
-        <h2>{error}</h2>
+        <div className="state-message">
+          <h2>{error}</h2>
+        </div>
       </div>
     )
   }
@@ -117,16 +121,68 @@ function ProductDetails() {
       <Navbar />
 
       {product && (
-        <div className="product-details">
-          <img src={product.image} alt={product.title} width="200" />
+        <div className="product-details-page">
+          <div className="product-details-card">
 
-          <h2>{product.title}</h2>
-          <p>{product.description}</p>
-          <h3>₹{product.price}</h3>
+            {/* IMAGE */}
+            <div className="product-details-image-box">
+              <img
+                src={product.image}
+                alt={product.title}
+                className="product-details-image"
+              />
+            </div>
 
-          <button onClick={handleAddToCart} disabled={addingToCart}>
-            {addingToCart ? 'Adding...' : 'Add to Cart'}
-          </button>
+            {/* INFO + BUY BOX */}
+            <div className="product-details-info">
+              <h1>{product.title}</h1>
+
+              {product.category && (
+                <p className="product-details-category">
+                  {product.category}
+                </p>
+              )}
+
+              <hr className="product-details-divider" />
+
+              <p className="product-details-price">
+                <span className="price-symbol">₹</span>
+                {product.price}
+              </p>
+
+              <p className="product-details-description">
+                {product.description}
+              </p>
+
+              <div className="buy-box">
+                <p className="buy-box-price">
+                  <span className="price-symbol">₹</span>
+                  {product.price}
+                </p>
+                <p className="buy-box-stock">In Stock</p>
+
+                <button
+                  className="btn-primary"
+                  onClick={handleAddToCart}
+                  disabled={addingToCart}
+                >
+                  {addingToCart ? 'Adding...' : 'Add to Cart'}
+                </button>
+
+                <button
+                  className="btn-secondary"
+                  onClick={async () => {
+                    await handleAddToCart()
+                    navigate('/cart')
+                  }}
+                  disabled={addingToCart}
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
     </div>
