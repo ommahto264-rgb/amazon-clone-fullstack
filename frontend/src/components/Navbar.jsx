@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 
 function Navbar({ searchTerm, setSearchTerm }) {
   const navigate = useNavigate()
@@ -8,89 +7,72 @@ function Navbar({ searchTerm, setSearchTerm }) {
 
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('role')
     navigate('/login')
   }
 
   return (
-    
-    <nav style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '10px 20px',
-      background: '#232f3e',
-      color: 'white'
-    }}>
-
+    <nav className="navbar">
       {/* Logo */}
-      <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-        <h2>MyShop</h2>
+      <Link to="/" className="navbar-logo">
+        <h2>amazon<span>.clone</span></h2>
       </Link>
 
-      {/* 🔍 SEARCH BAR */}
-      <form style={{ display: 'flex', gap: '5px' }}>
+      {/* Search bar */}
+      <form
+        className="navbar-search"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <input
           type="text"
           placeholder="Search products..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            padding: '8px',
-            borderRadius: '5px',
-            border: 'none',
-            width: '250px'
-          }}
+          onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
         />
-        <button type="submit" style={{
-          padding: '8px 12px',
-          background: '#febd69',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}>
-          Search
-        </button>
+        <button type="submit" aria-label="Search">🔍</button>
       </form>
 
-      {/* RIGHT SIDE LINKS */}
-      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-
+      {/* Right side links */}
+      <div className="navbar-links">
         {token ? (
           <>
-            <Link to="/cart" style={{ color: 'white' }}>Cart</Link>
-            <Link to="/orders" style={{ color: 'white' }}>Orders</Link>
-            {
-  role === 'admin' ? (
+            <Link to="/orders" className="nav-item">
+              <span className="nav-item-top">Your</span>
+              <span className="nav-item-bottom">Orders</span>
+            </Link>
 
-    <Link
-      to="/admin"
-      style={{ color: 'white' }}
-    >
-      Admin Dashboard
-    </Link>
+            {role === 'admin' ? (
+              <Link to="/admin" className="nav-item">
+                <span className="nav-item-top">Manage</span>
+                <span className="nav-item-bottom">Admin Dashboard</span>
+              </Link>
+            ) : (
+              <Link to="/become-seller" className="nav-item">
+                <span className="nav-item-top">Start</span>
+                <span className="nav-item-bottom">Become Seller</span>
+              </Link>
+            )}
 
-  ) : (
+            <Link to="/cart" className="nav-item">
+              <span className="nav-item-top">&nbsp;</span>
+              <span className="nav-item-bottom">🛒 Cart</span>
+            </Link>
 
-    <Link
-      to="/become-seller"
-      style={{ color: 'white' }}
-    >
-      Become Seller
-    </Link>
-
-  )
-}
-            <button className="logout-button" onClick={handleLogout} style={{ cursor: 'pointer' }}>
-              Logout
+            <button className="navbar-button" onClick={handleLogout}>
+              Sign Out
             </button>
           </>
         ) : (
           <>
-            <Link to="/login" style={{ color: 'white' }}>Login</Link>
-            <Link to="/signup" style={{ color: 'white' }}>Signup</Link>
+            <Link to="/login" className="nav-item">
+              <span className="nav-item-top">Hello, sign in</span>
+              <span className="nav-item-bottom">Account & Lists</span>
+            </Link>
+            <Link to="/signup" className="navbar-button">
+              Sign Up
+            </Link>
           </>
         )}
-
       </div>
     </nav>
   )

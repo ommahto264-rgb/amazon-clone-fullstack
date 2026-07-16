@@ -54,7 +54,7 @@ function BecomeSeller() {
         </div>
 
         <a
-          href="mailto:yourmail@gmail.com"
+          href="mailto:sellers@yourdomain.com?subject=Seller%20Application"
           style={{
             display: 'block',
             textAlign: 'center',

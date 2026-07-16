@@ -43,41 +43,40 @@ function EditProduct() {
 
   // UPDATE PRODUCT
   const handleSubmit = async (e) => {
+  e.preventDefault()
 
-    e.preventDefault()
+  try {
+    const token = localStorage.getItem('token')
 
-    try {
-
-      const token = localStorage.getItem('token')
-
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/createProduct/${id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            image,
-            price,
-            category
-          })
-        }
-      )
-
-      const data = await response.json()
-
-      alert(data.message)
-
-      navigate('/admin')
-
-    } catch (error) {
-      console.log(error)
+    const formData = new FormData()
+    formData.append('title', title)
+    formData.append('description', description)
+    formData.append('price', price)
+    formData.append('category', category)
+    formData.append('existingImage', image)
+    if (imageFile) {
+      formData.append('image', imageFile)
     }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/createProduct/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      }
+    )
+
+    const data = await response.json()
+    alert(data.message)
+    navigate('/admin')
+
+  } catch (error) {
+    console.log(error)
   }
+}
 
   return (
 

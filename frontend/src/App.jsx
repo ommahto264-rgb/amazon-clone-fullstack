@@ -34,22 +34,30 @@ function App() {
       {/* Product Details */}
       <Route path="/products/:id" element={<ProductDetails />} />
 
-      <Route
-          path="/admin/add-product"
-          element={<AdminAddProduct />}
-        />
-        <Route
-          path="/admin/edit-product/:id"
-          element={<EditProduct />}
-        />
-      <Route
-  path="/become-seller"
-  element={<BecomeSeller />}
+      {/* Admin-only Routes */}
+<Route
+  path="/admin/add-product"
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <AdminAddProduct />
+    </ProtectedRoute>
+  }
 />
-
+<Route
+  path="/admin/edit-product/:id"
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <EditProduct />
+    </ProtectedRoute>
+  }
+/>
 <Route
   path="/admin"
-  element={<AdminDashboard />}
+  element={
+    <ProtectedRoute requiredRole="admin">
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
 />
       {/* Protected Routes */}
       <Route
