@@ -2,8 +2,7 @@
 
 A full-stack e-commerce web application inspired by Amazon, built with React, Node.js, Express, and PostgreSQL. Users can browse products, manage a cart, and place orders; admins can add, edit, and delete products through a dedicated admin panel.
 
-**Live demo:** _add your deployed frontend URL here_
-**API base URL:** _add your deployed Railway backend URL here_
+**Live demo:-** https://amazon-clone-fullstack-five.vercel.app/
 
 ---
 
