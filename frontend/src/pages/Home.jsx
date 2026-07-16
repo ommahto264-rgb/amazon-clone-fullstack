@@ -1,38 +1,42 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import ProductCard from '../components/ProductCard'
-import sampleProducts from '../data/sampleProducts'
 
 function Home() {
-  const [products, setProducts] = useState(sampleProducts)
-  const [message, setMessage] = useState('')
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`)
-        const data = await response.json()
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      setError('')
 
-        if (data.products && data.products.length > 0) {
-          setProducts(data.products)
-          setMessage('')
-        } else {
-          setProducts(sampleProducts)
-          setMessage('Showing sample products because the backend has no products yet.')
-        }
-      } catch (error) {
-        console.log('Fetch error:', error)
-        setProducts(sampleProducts)
-        setMessage('Showing sample products because the backend is unavailable.')
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`)
+
+      if (!response.ok) {
+        throw new Error('Failed to load products. Please try again.')
       }
-    }
 
+      const data = await response.json()
+      setProducts(Array.isArray(data.products) ? data.products : [])
+
+    } catch (err) {
+      console.log('Fetch error:', err)
+      setError(err.message || 'Something went wrong while loading products.')
+
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchProducts()
   }, [])
 
   const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    (product.title || '').toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
@@ -47,13 +51,26 @@ function Home() {
       <div className="products-section">
         <h2 className="section-title">Top Products</h2>
 
-        {message && <p>{message}</p>}
+        {loading && <p>Loading products...</p>}
 
-        <div className="products-grid">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {!loading && error && (
+          <div>
+            <p>{error}</p>
+            <button onClick={fetchProducts}>Try again</button>
+          </div>
+        )}
+
+        {!loading && !error && filteredProducts.length === 0 && (
+          <p>No products found</p>
+        )}
+
+        {!loading && !error && (
+          <div className="products-grid">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

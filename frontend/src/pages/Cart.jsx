@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import sampleProducts from '../data/sampleProducts'
-
-const getSampleCart = () => {
-  return sampleProducts.slice(0, 3).map((product, index) => ({
-    ...product,
-    id: `${product.id}-${index}`,
-    quantity: index + 1,
-  }))
-}
 
 function Cart() {
+  const navigate = useNavigate()
   const [cart, setCart] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [placingOrder, setPlacingOrder] = useState(false)
 
   // FETCH CART
   const fetchCart = async () => {
     try {
       setLoading(true)
+      setError('')
 
       const token = localStorage.getItem('token')
 
@@ -29,25 +23,23 @@ function Cart() {
         }
       })
 
+      if (res.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('role')
+        navigate('/login')
+        return
+      }
+
       if (!res.ok) {
-        throw new Error('Failed to fetch cart')
+        throw new Error('Failed to load your cart. Please try again.')
       }
 
       const data = await res.json()
+      setCart(Array.isArray(data) ? data : [])
 
-      if (Array.isArray(data) && data.length > 0) {
-        setCart(data)
-        setMessage('')
-      } else {
-        setCart(getSampleCart())
-        setMessage('Showing sample cart items because the backend has no cart data yet.')
-      }
-
-    } catch (error) {
-      console.log(error)
-      setCart(getSampleCart())
-      setError('')
-      setMessage('Showing sample cart items because the backend is unavailable.')
+    } catch (err) {
+      console.log(err)
+      setError(err.message || 'Something went wrong while loading your cart.')
 
     } finally {
       setLoading(false)
@@ -56,19 +48,26 @@ function Cart() {
 
   useEffect(() => {
     fetchCart()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // UPDATE QUANTITY
   const updateQuantity = async (id, quantity) => {
+    if (quantity < 1) {
+      deleteItem(id)
+      return
+    }
+
+    const previousCart = cart
+    // optimistic update
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+    )
+
     try {
       const token = localStorage.getItem('token')
 
-      if (quantity < 1) {
-        setCart((prev) => prev.filter((item) => item.id !== id))
-        return
-      }
-
-      await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -77,41 +76,50 @@ function Cart() {
         body: JSON.stringify({ quantity })
       })
 
-      setCart((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-      )
+      if (!res.ok) {
+        throw new Error('Failed to update quantity')
+      }
 
-    } catch (error) {
-      console.log(error)
-      setCart((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-      )
+    } catch (err) {
+      console.log(err)
+      // roll back to the last known good state since the update failed
+      setCart(previousCart)
+      alert('Could not update quantity. Please try again.')
     }
   }
 
   // DELETE ITEM
   const deleteItem = async (id) => {
+    const previousCart = cart
+    // optimistic update
+    setCart((prev) => prev.filter((item) => item.id !== id))
+
     try {
       const token = localStorage.getItem('token')
 
-      await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
-      setCart((prev) => prev.filter((item) => item.id !== id))
+      if (!res.ok) {
+        throw new Error('Failed to remove item')
+      }
 
-    } catch (error) {
-      console.log(error)
-      setCart((prev) => prev.filter((item) => item.id !== id))
+    } catch (err) {
+      console.log(err)
+      // roll back since the delete failed
+      setCart(previousCart)
+      alert('Could not remove item. Please try again.')
     }
   }
 
   // PLACE ORDER
   const placeOrder = async () => {
     try {
+      setPlacingOrder(true)
       const token = localStorage.getItem('token')
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
@@ -123,34 +131,27 @@ function Cart() {
 
       const data = await res.json()
 
-      if (data.message) {
-        alert(data.message)
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to place order')
       }
 
-      const demoOrders = cart.map((item) => ({
-        ...item,
-        created_at: new Date().toISOString(),
-      }))
-
-      localStorage.setItem('demoOrders', JSON.stringify(demoOrders))
+      // backend already cleared the cart server-side, mirror that locally
       setCart([])
+      alert(data.message || 'Order placed successfully')
+      navigate('/orders')
 
-    } catch (error) {
-      console.log(error)
-      const demoOrders = cart.map((item) => ({
-        ...item,
-        created_at: new Date().toISOString(),
-      }))
+    } catch (err) {
+      console.log(err)
+      alert(err.message || 'Something went wrong while placing your order.')
 
-      localStorage.setItem('demoOrders', JSON.stringify(demoOrders))
-      setCart([])
-      alert('Order placed locally for demo purposes.')
+    } finally {
+      setPlacingOrder(false)
     }
   }
 
   // TOTAL PRICE
   const total = cart.reduce((acc, item) => {
-    return acc + item.price * item.quantity
+    return acc + Number(item.price) * item.quantity
   }, 0)
 
   // LOADING UI
@@ -169,6 +170,7 @@ function Cart() {
       <div>
         <Navbar />
         <h2>{error}</h2>
+        <button onClick={fetchCart}>Try again</button>
       </div>
     )
   }
@@ -178,8 +180,6 @@ function Cart() {
       <Navbar />
 
       <h1>Your Cart</h1>
-
-      {message && <p>{message}</p>}
 
       {/* EMPTY CART */}
       {cart.length === 0 && (
@@ -231,7 +231,6 @@ function Cart() {
                 onClick={() =>
                   updateQuantity(item.id, item.quantity - 1)
                 }
-                disabled={item.quantity <= 1}
               >
                 -
               </button>
@@ -256,8 +255,8 @@ function Cart() {
         >
           <h2>Total: ₹{total}</h2>
 
-          <button onClick={placeOrder}>
-            Place Order
+          <button onClick={placeOrder} disabled={placingOrder}>
+            {placingOrder ? 'Placing order...' : 'Place Order'}
           </button>
         </div>
       )}

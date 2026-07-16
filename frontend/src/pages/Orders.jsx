@@ -1,22 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import sampleProducts from '../data/sampleProducts'
 
 function Orders() {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
-
-  const getSampleOrders = () => {
-    return sampleProducts.slice(0, 2).map((product, index) => ({
-      ...product,
-      id: `order-${product.id}`,
-      quantity: index + 1,
-      created_at: new Date().toISOString(),
-    }))
-  }
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   // FETCH ORDERS
   const fetchOrders = async () => {
     try {
+      setLoading(true)
+      setError('')
+
       const token = localStorage.getItem('token')
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
@@ -25,25 +22,52 @@ function Orders() {
         }
       })
 
-      const data = await res.json()
-
-      if (Array.isArray(data) && data.length > 0) {
-        setOrders(data)
-      } else {
-        const savedOrders = JSON.parse(localStorage.getItem('demoOrders') || 'null')
-        setOrders(savedOrders && savedOrders.length > 0 ? savedOrders : getSampleOrders())
+      if (res.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('role')
+        navigate('/login')
+        return
       }
 
-    } catch (error) {
-      console.log(error)
-      const savedOrders = JSON.parse(localStorage.getItem('demoOrders') || 'null')
-      setOrders(savedOrders && savedOrders.length > 0 ? savedOrders : getSampleOrders())
+      if (!res.ok) {
+        throw new Error('Failed to load your orders. Please try again.')
+      }
+
+      const data = await res.json()
+      setOrders(Array.isArray(data) ? data : [])
+
+    } catch (err) {
+      console.log(err)
+      setError(err.message || 'Something went wrong while loading your orders.')
+
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <h2>Loading orders...</h2>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div>
+        <Navbar />
+        <h2>{error}</h2>
+        <button onClick={fetchOrders}>Try again</button>
+      </div>
+    )
+  }
 
   return (
     <div>
