@@ -34,31 +34,22 @@ function App() {
       {/* Product Details */}
       <Route path="/products/:id" element={<ProductDetails />} />
 
-      {/* Admin-only Routes */}
-<Route
-  path="/admin/add-product"
-  element={
-    <ProtectedRoute requiredRole="admin">
-      <AdminAddProduct />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/admin/edit-product/:id"
-  element={
-    <ProtectedRoute requiredRole="admin">
-      <EditProduct />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/admin"
-  element={
-    <ProtectedRoute requiredRole="admin">
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
-/>
+      {/*
+        Admin pages — publicly viewable on purpose (e.g. for portfolio review).
+        The Add/Edit/Delete actions are still enforced as admin-only by the
+        backend (authMiddleware + adminMiddleware on /api/createProduct),
+        so a non-admin visitor can look but any mutation attempt is rejected
+        server-side.
+      */}
+      <Route path="/admin/add-product" element={<AdminAddProduct />} />
+      <Route path="/admin/edit-product/:id" element={<EditProduct />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+
+      <Route
+        path="/become-seller"
+        element={<BecomeSeller />}
+      />
+
       {/* Protected Routes */}
       <Route
         path="/cart"
